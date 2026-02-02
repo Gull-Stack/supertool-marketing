@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperTool — ATSports.com Analytics Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #09090b; color: #fafafa; min-height: 100vh; }
+  
+  .header { padding: 20px 32px; border-bottom: 1px solid #1f1f23; display: flex; align-items: center; gap: 16px; }
+  .header img { height: 32px; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header .badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  
+  .nav { display: flex; gap: 8px; padding: 16px 32px; border-bottom: 1px solid #1f1f23; flex-wrap: wrap; }
+  .nav a { padding: 8px 16px; border-radius: 8px; font-size: 14px; color: #a1a1aa; text-decoration: none; transition: all 0.2s; }
+  .nav a:hover { background: #1f1f23; color: #fafafa; }
+  .nav a.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+  
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  
+  .client-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+  .client-header h2 { font-size: 28px; font-weight: 700; }
+  .client-header .period { color: #a1a1aa; font-size: 14px; background: #1f1f23; padding: 8px 16px; border-radius: 8px; }
+  
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; }
+  .stat-card .label { font-size: 13px; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .stat-card .value { font-size: 32px; font-weight: 700; }
+  .stat-card .change { font-size: 13px; margin-top: 4px; }
+  .stat-card .change.up { color: #22c55e; }
+  .stat-card .change.down { color: #ef4444; }
+  .stat-card .change.neutral { color: #a1a1aa; }
+  
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  
+  .panel { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; }
+  .panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 0; border-bottom: 1px solid #27272a; }
+  td { padding: 10px 0; border-bottom: 1px solid #1f1f23; font-size: 14px; }
+  td:last-child { text-align: right; }
+  
+  .bar-container { height: 8px; background: #27272a; border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  
+  .source-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1f1f23; }
+  .source-row:last-child { border-bottom: none; }
+  .source-name { width: 140px; font-size: 14px; }
+  .source-bar { flex: 1; }
+  .source-val { width: 80px; text-align: right; font-size: 14px; color: #a1a1aa; }
+  
+  .device-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .device-card { text-align: center; padding: 20px; background: #1f1f23; border-radius: 8px; }
+  .device-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .device-card .pct { font-size: 24px; font-weight: 700; }
+  .device-card .name { font-size: 13px; color: #71717a; margin-top: 4px; }
+  
+  .alert { background: #1c1917; border: 1px solid #854d0e; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+  .alert h3 { color: #facc15; font-size: 16px; margin-bottom: 8px; }
+  .alert ul { list-style: none; padding: 0; }
+  .alert li { padding: 6px 0; font-size: 14px; color: #d4d4d8; display: flex; align-items: flex-start; gap: 8px; }
+  .alert li::before { content: "⚠️"; flex-shrink: 0; }
+  
+  .geo-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .geo-item { display: flex; justify-content: space-between; padding: 8px 12px; background: #1f1f23; border-radius: 6px; font-size: 14px; }
+  .geo-item .val { color: #a1a1aa; }
+  
+  .trend-chart { display: flex; align-items: flex-end; gap: 4px; height: 120px; padding-top: 12px; }
+  .trend-bar { flex: 1; background: linear-gradient(180deg, #6366f1, #8b5cf680); border-radius: 4px 4px 0 0; min-width: 20px; position: relative; transition: all 0.3s; }
+  .trend-bar:hover { background: linear-gradient(180deg, #8b5cf6, #6366f1); }
+  .trend-bar .tip { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #a1a1aa; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+  .trend-bar:hover .tip { opacity: 1; }
+  .trend-labels { display: flex; gap: 4px; margin-top: 8px; }
+  .trend-labels span { flex: 1; text-align: center; font-size: 10px; color: #52525b; min-width: 20px; }
+  
+  .logo-text { background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+  
+  .bounce-bar { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .bounce-good { background: #052e16; color: #22c55e; }
+  .bounce-ok { background: #422006; color: #f59e0b; }
+  .bounce-bad { background: #450a0a; color: #ef4444; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo-text" style="font-size: 24px;">SuperTool</span>
+  <h1>Analytics Dashboard</h1>
+  <span class="badge">LIVE DATA</span>
+</div>
+
+<div class="nav">
+  <a href="#">Dashboard</a>
+  <a href="#">Customers</a>
+  <a href="#">Messages</a>
+  <a href="#">Templates</a>
+  <a href="#">Website & SEO</a>
+  <a href="#" class="active">Analytics</a>
+  <a href="#">Custom Domain</a>
+  <a href="#">Requests</a>
+  <a href="#">Settings</a>
+</div>
+
+<div class="container">
+  <div class="client-header">
+    <div>
+      <h2>🏟️ ATSports.com</h2>
+      <p style="color: #71717a; margin-top: 4px;">Official Surface of the PPA • Sports Court Surfacing</p>
+    </div>
+    <div class="period">📅 Last 90 Days</div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert">
+    <h3>🔍 Issues Detected</h3>
+    <ul>
+      <li><strong>Bot traffic detected:</strong> 2,757 sessions from Gansu, China (~19% of total) — likely automated. Recommend blocking or filtering.</li>
+      <li><strong>Duplicate URLs:</strong> <code>/cushion-x/</code> and <code>/cushionx/</code> both active — splitting SEO equity. Add a 301 redirect.</li>
+      <li><strong>High bounce on Contact page:</strong> 71% bounce rate on /contact-us when used as landing page. Page needs redesign.</li>
+      <li><strong>Low organic search share:</strong> Only 30% traffic from search. Major SEO opportunity being left on the table.</li>
+    </ul>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Sessions</div>
+      <div class="value">14,291</div>
+      <div class="change neutral">Last 90 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Unique Users</div>
+      <div class="value">9,676</div>
+      <div class="change up">96% new visitors</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Page Views</div>
+      <div class="value">22,405</div>
+      <div class="change neutral">1.57 pages/session</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg. Session</div>
+      <div class="value">2m 34s</div>
+      <div class="change neutral">Good engagement</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Bounce Rate</div>
+      <div class="value">61.1%</div>
+      <div class="change down">Needs improvement</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Contact Page Views</div>
+      <div class="value">1,401</div>
+      <div class="change up">High intent traffic</div>
+    </div>
+  </div>
+
+  <!-- Traffic Trend -->
+  <div class="panel" style="margin-bottom: 24px;">
+    <h3>📈 Weekly Traffic Trend</h3>
+    <div class="trend-chart">
+      <div class="trend-bar" style="height: 49%"><span class="tip">W45: 662</span></div>
+      <div class="trend-bar" style="height: 89%"><span class="tip">W46: 1,204</span></div>
+      <div class="trend-bar" style="height: 92%"><span class="tip">W47: 1,224</span></div>
+      <div class="trend-bar" style="height: 69%"><span class="tip">W48: 923</span></div>
+      <div class="trend-bar" style="height: 98%"><span class="tip">W49: 1,305</span></div>
+      <div class="trend-bar" style="height: 83%"><span class="tip">W50: 1,102</span></div>
+      <div class="trend-bar" style="height: 81%"><span class="tip">W51: 1,075</span></div>
+      <div class="trend-bar" style="height: 51%"><span class="tip">W52: 676</span></div>
+      <div class="trend-bar" style="height: 32%"><span class="tip">W53: 433</span></div>
+      <div class="trend-bar" style="height: 76%"><span class="tip">W02: 1,017</span></div>
+      <div class="trend-bar" style="height: 98%"><span class="tip">W03: 1,310</span></div>
+      <div class="trend-bar" style="height: 82%"><span class="tip">W04: 1,096</span></div>
+      <div class="trend-bar" style="height: 100%"><span class="tip">W05: 1,333</span></div>
+    </div>
+    <div class="trend-labels">
+      <span>W45</span><span>W46</span><span>W47</span><span>W48</span><span>W49</span><span>W50</span><span>W51</span><span>W52</span><span>W53</span><span>W02</span><span>W03</span><span>W04</span><span>W05</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Top Pages -->
+    <div class="panel">
+      <h3>📄 Top Pages</h3>
+      <table>
+        <tr><th>Page</th><th>Views</th></tr>
+        <tr><td>/</td><td>6,072</td></tr>
+        <tr><td>/court-designer/</td><td>2,440</td></tr>
+        <tr><td>/acrytechsportscoatings/</td><td>2,213</td></tr>
+        <tr><td>/contact-us/</td><td>1,401</td></tr>
+        <tr><td>/color-options/</td><td>657</td></tr>
+        <tr><td>/cushion-x/</td><td>577</td></tr>
+        <tr><td>/pickleball/</td><td>574</td></tr>
+        <tr><td>/meettheteam/</td><td>534</td></tr>
+        <tr><td>/paint-calculator/</td><td>468</td></tr>
+        <tr><td>/documents/</td><td>455</td></tr>
+      </table>
+    </div>
+
+    <!-- Traffic Sources -->
+    <div class="panel">
+      <h3>🔗 Traffic Sources</h3>
+      <div class="source-row">
+        <div class="source-name">Direct</div>
+        <div class="source-bar"><div class="bar-container"><div class="bar" style="width: 63%"></div></div></div>
+        <div class="source-val">8,970</div>
+      </div>
+      <div class="source-row">
+        <div class="source-name">Organic Search</div>
+        <div class="source-bar"><div class="bar-container"><div class="bar" style="width: 30%"></div></div></div>
+        <div class="source-val">4,286</div>
+      </div>
+      <div class="source-row">
+        <div class="source-name">Referral</div>
+        <div class="source-bar"><div class="bar-container"><div class="bar" style="width: 2.4%"></div></div></div>
+        <div class="source-val">345</div>
+      </div>
+      <div class="source-row">
+        <div class="source-name">Social</div>
+        <div class="source-bar"><div class="bar-container"><div class="bar" style="width: 1.6%"></div></div></div>
+        <div class="source-val">224</div>
+      </div>
+      <div class="source-row">
+        <div class="source-name">Other</div>
+        <div class="source-bar"><div class="bar-container"><div class="bar" style="width: 0.8%"></div></div></div>
+        <div class="source-val">116</div>
+      </div>
+      
+      <div style="margin-top: 24px;">
+        <h3>📱 Devices</h3>
+        <div class="device-grid">
+          <div class="device-card">
+            <div class="icon">🖥️</div>
+            <div class="pct">71%</div>
+            <div class="name">Desktop</div>
+          </div>
+          <div class="device-card">
+            <div class="icon">📱</div>
+            <div class="pct">26%</div>
+            <div class="name">Mobile</div>
+          </div>
+          <div class="device-card">
+            <div class="icon">📋</div>
+            <div class="pct">3%</div>
+            <div class="name">Tablet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Landing Pages with Bounce -->
+    <div class="panel">
+      <h3>🚪 Landing Pages & Bounce Rate</h3>
+      <table>
+        <tr><th>Page</th><th>Sessions</th><th>Bounce</th></tr>
+        <tr><td>/</td><td>5,021</td><td><span class="bounce-bar bounce-ok">45%</span></td></tr>
+        <tr><td>/court-designer</td><td>1,323</td><td><span class="bounce-bar bounce-bad">63%</span></td></tr>
+        <tr><td>/acrytechsportscoatings</td><td>1,183</td><td><span class="bounce-bar bounce-good">35%</span></td></tr>
+        <tr><td>/color-options</td><td>394</td><td><span class="bounce-bar bounce-bad">61%</span></td></tr>
+        <tr><td>/contact-us</td><td>314</td><td><span class="bounce-bar bounce-bad">71%</span></td></tr>
+        <tr><td>/cushion-x</td><td>229</td><td><span class="bounce-bar bounce-ok">52%</span></td></tr>
+        <tr><td>/pickleball</td><td>218</td><td><span class="bounce-bar bounce-ok">51%</span></td></tr>
+        <tr><td>/aboutus</td><td>196</td><td><span class="bounce-bar bounce-ok">51%</span></td></tr>
+      </table>
+    </div>
+
+    <!-- Geography -->
+    <div class="panel">
+      <h3>🌍 Top Regions</h3>
+      <div class="geo-list">
+        <div class="geo-item"><span>⚠️ Gansu (bot?)</span><span class="val">2,757</span></div>
+        <div class="geo-item"><span>Georgia</span><span class="val">1,226</span></div>
+        <div class="geo-item"><span>Texas</span><span class="val">1,040</span></div>
+        <div class="geo-item"><span>Florida</span><span class="val">788</span></div>
+        <div class="geo-item"><span>California</span><span class="val">699</span></div>
+        <div class="geo-item"><span>Virginia</span><span class="val">678</span></div>
+        <div class="geo-item"><span>Illinois</span><span class="val">267</span></div>
+        <div class="geo-item"><span>Colorado</span><span class="val">249</span></div>
+        <div class="geo-item"><span>Ohio</span><span class="val">240</span></div>
+        <div class="geo-item"><span>(not set)</span><span class="val">1,971</span></div>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 16px; background: #1f1f23; border-radius: 8px;">
+        <p style="font-size: 13px; color: #a1a1aa;">💡 <strong style="color: #fafafa;">Insight:</strong> Georgia leads real traffic, yet HQ is in Houston, TX. Home market underperforming — local SEO opportunity.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; padding: 40px 0; color: #52525b; font-size: 13px;">
+    Powered by <span class="logo-text">SuperTool</span> — Built by <strong>GullStack Trust</strong>
+  </div>
+</div>
+
+</body>
+</html>
