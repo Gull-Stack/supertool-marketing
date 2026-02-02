@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperTool — D One Builders Dashboard Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #09090b; color: #fafafa; min-height: 100vh; }
+  
+  .header { padding: 20px 32px; border-bottom: 1px solid #1f1f23; display: flex; align-items: center; gap: 16px; }
+  .logo-text { background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 24px; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header .badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  
+  .nav { display: flex; gap: 8px; padding: 16px 32px; border-bottom: 1px solid #1f1f23; flex-wrap: wrap; }
+  .nav a { padding: 8px 16px; border-radius: 8px; font-size: 14px; color: #a1a1aa; text-decoration: none; transition: all 0.2s; }
+  .nav a:hover { background: #1f1f23; color: #fafafa; }
+  .nav a.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+  
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  
+  .client-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+  .client-header h2 { font-size: 28px; font-weight: 700; }
+  .client-header .period { color: #a1a1aa; font-size: 14px; background: #1f1f23; padding: 8px 16px; border-radius: 8px; }
+  
+  .overview-text { color: #a1a1aa; font-size: 15px; line-height: 1.7; margin-bottom: 32px; max-width: 800px; }
+  .overview-text strong { color: #fafafa; }
+  
+  /* Skills Grid */
+  .skills-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: #6366f1; margin-bottom: 16px; font-weight: 600; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+  .skill-card { background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 28px; transition: all 0.2s; position: relative; overflow: hidden; }
+  .skill-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
+  .skill-card .skill-icon { font-size: 28px; margin-bottom: 12px; }
+  .skill-card .skill-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .skill-card .skill-value { font-size: 36px; font-weight: 800; margin: 12px 0 4px; }
+  .skill-card .skill-sub { font-size: 13px; color: #71717a; }
+  .skill-card .skill-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 12px; }
+  .status-live { background: #052e16; color: #22c55e; }
+  .status-new { background: #1e1b4b; color: #818cf8; }
+  .status-attention { background: #451a03; color: #f59e0b; }
+  
+  .change-up { color: #22c55e; font-size: 13px; }
+  .change-down { color: #ef4444; font-size: 13px; }
+  
+  /* Review Section */
+  .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .review-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; }
+  .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .review-author { font-weight: 600; font-size: 14px; }
+  .review-stars { color: #facc15; font-size: 14px; }
+  .review-text { font-size: 14px; color: #a1a1aa; line-height: 1.6; }
+  .review-source { font-size: 12px; color: #52525b; margin-top: 10px; }
+  
+  /* CTA Banner */
+  .cta-banner { background: linear-gradient(135deg, #1e1b4b, #312e81); border: 1px solid #3730a3; border-radius: 16px; padding: 40px; text-align: center; margin-bottom: 40px; }
+  .cta-banner h3 { font-size: 22px; margin-bottom: 8px; }
+  .cta-banner p { color: #a5b4fc; font-size: 15px; margin-bottom: 20px; }
+  .cta-btn { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 32px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; transition: all 0.2s; }
+  .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
+  
+  /* Insights Panel */
+  .insights { background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 28px; margin-bottom: 40px; }
+  .insights h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .insight-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #1f1f23; }
+  .insight-item:last-child { border-bottom: none; }
+  .insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .insight-text { font-size: 14px; color: #d4d4d8; line-height: 1.5; }
+  .insight-text strong { color: #fafafa; }
+  
+  /* Potential Section */
+  .potential-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .potential-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; text-align: center; }
+  .potential-card .p-icon { font-size: 32px; margin-bottom: 12px; }
+  .potential-card .p-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .potential-card .p-desc { font-size: 13px; color: #71717a; }
+  .potential-card .p-value { font-size: 24px; font-weight: 800; color: #22c55e; margin: 8px 0; }
+
+  .footer-bar { text-align: center; padding: 40px 0; color: #52525b; font-size: 13px; }
+  
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    .header { padding: 16px; }
+    .nav { padding: 12px 16px; overflow-x: auto; flex-wrap: nowrap; }
+    .nav a { white-space: nowrap; font-size: 13px; padding: 6px 12px; }
+    .client-header h2 { font-size: 22px; }
+    .skill-card .skill-value { font-size: 28px; }
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+    .reviews-grid { grid-template-columns: 1fr; }
+    .cta-banner { padding: 28px 20px; }
+  }
+  @media (max-width: 480px) {
+    .skills-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo-text">SuperTool</span>
+  <h1>Business Dashboard</h1>
+  <span class="badge">PREVIEW</span>
+</div>
+
+<div class="nav">
+  <a href="#" class="active">Dashboard</a>
+  <a href="#">Website</a>
+  <a href="#">Reviews</a>
+  <a href="#">Analytics</a>
+  <a href="#">SEO</a>
+  <a href="#">Messages</a>
+  <a href="#">Scheduling</a>
+  <a href="#">Settings</a>
+</div>
+
+<div class="container">
+  <div class="client-header">
+    <div>
+      <h2>🏗️ D One Builders</h2>
+      <p style="color: #71717a; margin-top: 4px;">General Contractor — Gilroy, Hollister & Morgan Hill, CA</p>
+    </div>
+    <div class="period">Dashboard Preview</div>
+  </div>
+
+  <div class="overview-text">
+    Welcome to your SuperTool dashboard, <strong>D One Builders</strong>. This is your single command center for your online presence — website health, Google reviews, customer analytics, SEO performance, and more. Everything in one place, updated in real time.
+  </div>
+
+  <!-- Skills / Key Metrics -->
+  <div class="skills-label">📊 Your Business at a Glance</div>
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">⭐</div>
+      <div class="skill-name">Google Reviews</div>
+      <div class="skill-value">4.8</div>
+      <div class="skill-sub">5 reviews on Google</div>
+      <div class="change-up">100% 5-star in last 6 months</div>
+      <span class="skill-status status-live">CONNECTED</span>
+    </div>
+    
+    <div class="skill-card">
+      <div class="skill-icon">🌐</div>
+      <div class="skill-name">Website Status</div>
+      <div class="skill-value" style="font-size: 28px; color: #22c55e;">Online ✓</div>
+      <div class="skill-sub">donebuilders.com</div>
+      <div class="change-down">⚠️ Very thin content — needs improvement</div>
+      <span class="skill-status status-attention">NEEDS WORK</span>
+    </div>
+    
+    <div class="skill-card">
+      <div class="skill-icon">📊</div>
+      <div class="skill-name">Analytics</div>
+      <div class="skill-value">—</div>
+      <div class="skill-sub">Connect Google Analytics to see traffic</div>
+      <span class="skill-status status-new">READY TO CONNECT</span>
+    </div>
+    
+    <div class="skill-card">
+      <div class="skill-icon">🔍</div>
+      <div class="skill-name">SEO Score</div>
+      <div class="skill-value" style="color: #f59e0b;">42<span style="font-size: 16px; color: #71717a;">/100</span></div>
+      <div class="skill-sub">Needs improvement — we can fix this</div>
+      <div class="change-down">Missing meta tags, thin content, no blog</div>
+      <span class="skill-status status-attention">NEEDS WORK</span>
+    </div>
+    
+    <div class="skill-card">
+      <div class="skill-icon">📍</div>
+      <div class="skill-name">Google Business Profile</div>
+      <div class="skill-value" style="font-size: 28px;">Active</div>
+      <div class="skill-sub">8901 Murray Ave Suite B, Gilroy, CA</div>
+      <span class="skill-status status-live">CONNECTED</span>
+    </div>
+    
+    <div class="skill-card">
+      <div class="skill-icon">🔗</div>
+      <div class="skill-name">Review Link</div>
+      <div style="margin: 12px 0; padding: 10px; background: #1f1f23; border-radius: 8px; font-family: monospace; font-size: 12px; color: #a1a1aa; word-break: break-all;">
+        search.google.com/local/writereview?placeid=ChIJVVWV...
+      </div>
+      <div class="skill-sub">Send to happy customers for instant reviews</div>
+      <span class="skill-status status-live">READY TO SHARE</span>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="insights">
+    <h3>💡 AI Insights & Recommendations</h3>
+    <div class="insight-item">
+      <span class="insight-icon">🔴</span>
+      <div class="insight-text"><strong>Your website has very thin content.</strong> The homepage has only ~50 words. Google needs 300+ words per page to rank you. Competitors like Bockmon & Woody (Gilroy) have 10x more content. We can fix this with optimized service pages.</div>
+    </div>
+    <div class="insight-item">
+      <span class="insight-icon">🟡</span>
+      <div class="insight-text"><strong>Only 5 Google reviews.</strong> Your rating is great (4.8) but volume is low. Competitors average 20-40 reviews. Use your review link to send to past clients — aim for 2-3 new reviews per month.</div>
+    </div>
+    <div class="insight-item">
+      <span class="insight-icon">🟡</span>
+      <div class="insight-text"><strong>No blog or project portfolio.</strong> Homeowners research contractors heavily. A portfolio page with project photos and a blog with "Kitchen Remodel Cost in Gilroy" type content would drive organic traffic.</div>
+    </div>
+    <div class="insight-item">
+      <span class="insight-icon">🟢</span>
+      <div class="insight-text"><strong>Strong local presence.</strong> You're listed on Google Business, Yelp, BBB, and Facebook. Good foundation to build on.</div>
+    </div>
+  </div>
+
+  <!-- Google Reviews -->
+  <div class="section-title">⭐ Google Reviews (Live)</div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-author">Bryce Morgan</span>
+        <span class="review-stars">★★★★★</span>
+      </div>
+      <div class="review-text">"D One Builders has done a variety of different projects for us, including a fireplace surround/mantel, bathroom remodel... Exceptional quality and communication throughout every project."</div>
+      <div class="review-source">Google · 5/5</div>
+    </div>
+    
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-author">Sherry Hitchcock</span>
+        <span class="review-stars">★★★★★</span>
+      </div>
+      <div class="review-text">"D One Builders provides excellent remodel services. Work is meticulous, job site is kept clean and all of the crew is thoughtful and attentive to the requests of the homeowner."</div>
+      <div class="review-source">Google · 5/5</div>
+    </div>
+    
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-author">K King</span>
+        <span class="review-stars">★★★★★</span>
+      </div>
+      <div class="review-text">"Kyle and his entire crew were all extremely professional and reliable. We contracted with him to complete a home office conversion and couldn't be happier with the results."</div>
+      <div class="review-source">Google · 5/5</div>
+    </div>
+  </div>
+
+  <!-- Growth Potential -->
+  <div class="section-title">🚀 Growth Potential with SuperTool</div>
+  <div class="potential-grid">
+    <div class="potential-card">
+      <div class="p-icon">📈</div>
+      <div class="p-title">Estimated Traffic Increase</div>
+      <div class="p-value">+300%</div>
+      <div class="p-desc">With optimized content & local SEO</div>
+    </div>
+    <div class="potential-card">
+      <div class="p-icon">⭐</div>
+      <div class="p-title">Review Goal</div>
+      <div class="p-value">25+</div>
+      <div class="p-desc">Reviews within 6 months using your link</div>
+    </div>
+    <div class="potential-card">
+      <div class="p-icon">🔍</div>
+      <div class="p-title">Target SEO Score</div>
+      <div class="p-value">85+</div>
+      <div class="p-desc">From 42 → 85+ with our optimization</div>
+    </div>
+    <div class="potential-card">
+      <div class="p-icon">📞</div>
+      <div class="p-title">Estimated New Leads</div>
+      <div class="p-value">10-15/mo</div>
+      <div class="p-desc">From organic search & Google Business</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <h3>Ready to grow D One Builders?</h3>
+    <p>Your dashboard is ready. Connect your accounts and start seeing results in weeks, not months.</p>
+    <a href="#" class="cta-btn">Get Started with SuperTool →</a>
+  </div>
+
+  <div class="footer-bar">
+    Powered by <span class="logo-text" style="font-size: 13px;">SuperTool</span> — Built by <strong>GullStack Trust</strong>
+  </div>
+</div>
+
+</body>
+</html>
