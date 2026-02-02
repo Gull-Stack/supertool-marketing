@@ -1049,9 +1049,23 @@ section { position: relative; }
   .hero h1 { letter-spacing: -0.5px; }
 }
 @media (max-width: 480px) {
-  .hero { height: 250vh; }
+  .hero { height: 180vh; }
+  .car-assembly { width: 100%; max-width: 320px; height: 200px; }
+  .part-body { width: 280px; margin-left: -140px; height: 130px; }
+  .part-hood { width: 120px; }
+  .part-trunk { width: 100px; }
+  .part-wheel-front, .part-wheel-rear { width: 60px; height: 60px; }
+  .part-windshield { width: 80px; height: 55px; }
+  .part-headlights { width: 35px; height: 24px; }
+  .part-taillights { width: 30px; height: 20px; }
+  .part-engine { width: 70px; height: 35px; }
+  .part-exhaust { width: 55px; height: 14px; }
+  .part-door { width: 90px; height: 60px; }
   .services-grid { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+}
+@media (max-width: 768px) {
+  .hero { height: 200vh; }
 }
 
 /* ===== UTILITY ===== */
@@ -1689,13 +1703,17 @@ navLinks.querySelectorAll('a').forEach(a => {
   let lastProgress = -1;
 
   // Parse initial positions from data attributes
+  // Scale down scatter distances on mobile
+  const isMobile = window.innerWidth <= 768;
+  const scatterScale = isMobile ? 0.4 : 1;
+
   const partConfigs = [];
   parts.forEach(part => {
     partConfigs.push({
       el: part,
-      startX: parseFloat(part.dataset.startX) || 0,
-      startY: parseFloat(part.dataset.startY) || 0,
-      startR: parseFloat(part.dataset.startR) || 0,
+      startX: (parseFloat(part.dataset.startX) || 0) * scatterScale,
+      startY: (parseFloat(part.dataset.startY) || 0) * scatterScale,
+      startR: (parseFloat(part.dataset.startR) || 0) * (isMobile ? 0.5 : 1),
       startS: parseFloat(part.dataset.startS) || 1
     });
   });
@@ -1715,9 +1733,10 @@ navLinks.querySelectorAll('a').forEach(a => {
     const viewHeight = window.innerHeight;
 
     // Calculate scroll progress through the hero (0 to 1)
-    // Start assembling after 10% scroll, finish at 80%
+    // Mobile: faster assembly (less scrolling needed)
     const rawProgress = -rect.top / (heroHeight - viewHeight);
-    const progress = Math.max(0, Math.min(1, (rawProgress - 0.05) / 0.65));
+    const assemblyRange = isMobile ? 0.5 : 0.65;
+    const progress = Math.max(0, Math.min(1, (rawProgress - 0.05) / assemblyRange));
 
     // Only update if progress actually changed (throttle)
     const roundedProgress = Math.round(progress * 1000);
